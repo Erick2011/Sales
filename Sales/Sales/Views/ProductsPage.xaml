@@ -5,6 +5,9 @@
              x:Class="Sales.Views.ProductsPage"
              BindingContext="{Binding Main, Source={StaticResource Locator}}"
              Title="{i18n:Translate Products}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Icon="ic_action_add_circle.png" Command="{Binding AddProductCommand}"/>
+    </ContentPage.ToolbarItems>
     <ContentPage.Content>
         <StackLayout
             BindingContext="{Binding Products}"
@@ -18,18 +21,36 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>
+                            <ViewCell.ContextActions>
+                                <MenuItem Text="{i18n:Translate Edit}" Command="{Binding EditProductCommand}"/>
+                                <MenuItem Text="{i18n:Translate Delete}" Command="{Binding DeleteProductCommand}" IsDestructive="True"/>
+                            </ViewCell.ContextActions>
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="2*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Label FontAttributes="Bold" 
-                                       Grid.Column="0"
-                                       Text="{Binding Description}">
-                                </Label>
-                                <Label Grid.Column="1"
+                                <Image
+                                    Grid.Column="0"
+                                    WidthRequest="100"
+                                    Source="{Binding ImageFullPath}">
+                                    
+                                </Image>
+                                <StackLayout
+                                    Grid.Column="1"
+                                    VerticalOptions="Center">
+                                    <Label FontAttributes="Bold" 
+                                        Text="{Binding Description}">
+                                    </Label>
+                                    <Label 
+                                        Text="{Binding Remarks}">
+                                    </Label>
+                                </StackLayout>
+                                <Label Grid.Column="2"
                                        HorizontalOptions="End"
-                                       Text="{Binding Price, StringFormat='{0:C2}'}">
+                                       Text="{Binding Price, StringFormat='{0:C2}'}"
+                                       VerticalOptions="Center">
                                 </Label>
                             </Grid>
                         </ViewCell>

@@ -4,20 +4,27 @@
     using GalaSoft.MvvmLight.Command;
     using Sales.Helpers;
     using Services;
+    using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
+    using System.Linq;
     using System.Windows.Input;
     using Xamarin.Forms;
 
     public class ProductsViewModel : BaseViewModel
     {
+        #region Attributes
         private ApiService apiService;
 
         private bool isRefreshing;
 
-        private ObservableCollection<Product> products;
+        private ObservableCollection<ProductItemViewModel> products;
+        #endregion
 
-        public ObservableCollection<Product> Products
+        #region Properties
+        public List<Product> MyProducts { get; set; }
+
+        public ObservableCollection<ProductItemViewModel> Products
         {
             get { return this.products; }
             set { this.SetValue(ref this.products, value); }
@@ -27,14 +34,33 @@
         {
             get { return this.isRefreshing; }
             set { this.SetValue(ref this.isRefreshing, value); }
-        }
+        } 
+        #endregion
 
+        #region Constructors
         public ProductsViewModel()
         {
+            instance = this;
             this.apiService = new ApiService();
             this.LoadProducts();
         }
+        #endregion
 
+        #region Singleton
+        public static ProductsViewModel instance;
+
+        public static ProductsViewModel GetInstance()
+        {
+            if(instance== null)
+            {
+                return new ProductsViewModel();
+            }
+
+            return instance;
+        }
+        #endregion
+
+        #region Methods
         private async void LoadProducts()
         {
             this.IsRefreshing = true;
@@ -58,18 +84,40 @@
                 await Application.Current.MainPage.DisplayAlert(Languages.Error, response.Message, Languages.Accept);
                 return;
             }
-         
-            var list = (List<Product>)response.Result;
-            this.Products = new ObservableCollection<Product>(list);
+
+            this.MyProducts = (List<Product>)response.Result;
+            this.RefreshList();
             this.IsRefreshing = false;
         }
 
+        public void RefreshList()
+        {
+            var myListProductItemViewModel = MyProducts.Select(p => new ProductItemViewModel
+            {
+                Description = p.Description,
+                ImageArray = p.ImageArray,
+                ImagePath = p.ImagePath,
+                IsAvailable = p.IsAvailable,
+                Price = p.Price,
+                ProductId = p.ProductId,
+                PublishOn = p.PublishOn,
+                Remarks = p.Remarks,
+            });
+
+            this.Products = new ObservableCollection<ProductItemViewModel>(
+                myListProductItemViewModel.OrderBy(p => p.Description));
+            
+        }
+        #endregion
+
+        #region Commands
         public ICommand RefreshCommand
         {
             get
             {
                 return new RelayCommand(LoadProducts);
             }
-        }
+        } 
+        #endregion
     }
 }
