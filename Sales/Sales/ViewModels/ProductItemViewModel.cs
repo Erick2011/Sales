@@ -43,7 +43,7 @@
         private async void GoToEditProduct()
         {
             MainViewModel.GetInstance().EditProduct = new EditProductViewModel(this);
-            await Application.Current.MainPage.Navigation.PushAsync(new EditProductPage());
+            await App.Navigator.PushAsync(new EditProductPage());
         }
 
         private async void DeleteProduct()
@@ -71,7 +71,7 @@
             var prefix = Application.Current.Resources["UrlPrefix"].ToString();
             var controller = Application.Current.Resources["UrlProductsController"].ToString();
 
-            var response = await apiService.Delete(url, prefix, controller,this.ProductId);
+            var response = await apiService.Delete(url, prefix, controller,this.ProductId,Settings.TokenType, Settings.AccessToken);
             if (!response.IsSuccess)
             {
                 await Application.Current.MainPage.DisplayAlert(Languages.Error, response.Message, Languages.Accept);
@@ -79,12 +79,14 @@
             }
 
             var productsViewModel = ProductsViewModel.GetInstance();
-            var deletedProduct = productsViewModel.Products.Where(p => p.ProductId == this.ProductId).FirstOrDefault();
+            var deletedProduct = productsViewModel.MyProducts.Where(p => p.ProductId == this.ProductId).FirstOrDefault();
 
-            if(deletedProduct != null)
+            if (deletedProduct != null)
             {
-                productsViewModel.Products.Remove(deletedProduct);
+                productsViewModel.MyProducts.Remove(deletedProduct);
             }
+
+            productsViewModel.RefreshList();
         }
         #endregion
     }

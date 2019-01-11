@@ -4,6 +4,7 @@ using Plugin.Media.Abstractions;
 using Sales.Common.Models;
 using Sales.Helpers;
 using Sales.Services;
+using System;
 using System.Linq;
 using System.Windows.Input;
 using Xamarin.Forms;
@@ -63,6 +64,65 @@ namespace Sales.ViewModels
         #endregion
 
         #region Commands 
+        public ICommand DeleteCommand
+        {
+            get
+            {
+                return new RelayCommand(Delete);
+            }
+        }
+
+        private async void Delete()
+        {
+            var answer = await Application.Current.MainPage.DisplayAlert(
+                Languages.Confirm,
+                Languages.DeleteConfirmation,
+                Languages.Yes,
+                Languages.No);
+
+            if (!answer)
+            {
+                return;
+            }
+
+            this.IsRunning = true;
+            this.isEnabled = false;
+
+            var connection = await this.apiService.CheckConnection();
+
+            if (!connection.IsSuccess)
+            {
+                this.IsRunning = false;
+                this.isEnabled = true;
+                await Application.Current.MainPage.DisplayAlert(Languages.Error, connection.Message, Languages.Accept);
+                return;
+            }
+
+            var url = Application.Current.Resources["UrlAPI"].ToString();
+            var prefix = Application.Current.Resources["UrlPrefix"].ToString();
+            var controller = Application.Current.Resources["UrlProductsController"].ToString();
+
+            var response = await apiService.Delete(url, prefix, controller, this.Product.ProductId, Settings.TokenType, Settings.AccessToken);
+            if (!response.IsSuccess)
+            {
+                this.IsRunning = false;
+                this.isEnabled = true;
+                await Application.Current.MainPage.DisplayAlert(Languages.Error, response.Message, Languages.Accept);
+                return;
+            }
+
+            var productsViewModel = ProductsViewModel.GetInstance();
+            var deletedProduct = productsViewModel.MyProducts.Where(p => p.ProductId == this.Product.ProductId).FirstOrDefault();
+
+            if (deletedProduct != null)
+            {
+                productsViewModel.MyProducts.Remove(deletedProduct);
+            }
+
+            productsViewModel.RefreshList();
+            await App.Navigator.PopAsync();
+        }
+
         public ICommand SaveCommand
         {
             get
@@ -116,7 +176,7 @@ namespace Sales.ViewModels
             var url = Application.Current.Resources["UrlAPI"].ToString();
             var prefix = Application.Current.Resources["UrlPrefix"].ToString();
             var controller = Application.Current.Resources["UrlProductsController"].ToString();
-            var response = await apiService.Put(url, prefix, controller, this.product, this.product.ProductId);
+            var response = await apiService.Put(url, prefix, controller, this.product, this.product.ProductId, Settings.TokenType, Settings.AccessToken);
 
             if (!response.IsSuccess)
             {
@@ -142,7 +202,7 @@ namespace Sales.ViewModels
             this.IsRunning = false;
             this.IsEnabled = true;
 
-            await Application.Current.MainPage.Navigation.PopAsync();
+            await App.Navigator.PopAsync();
         }
 
         public ICommand ChangeImageCommand

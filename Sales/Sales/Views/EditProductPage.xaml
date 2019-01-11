@@ -86,15 +86,29 @@
                     IsRunning="{Binding IsRunning}"
                     VerticalOptions="CenterAndExpand">
                 </ActivityIndicator>
-                <Button
-                    BorderRadius="23"
-                    Command="{Binding SaveCommand}"
-                    HeightRequest="46"
-                    BackgroundColor="Navy"
-                    TextColor="White"
-                    IsEnabled="{Binding IsEnabled}"
-                    Text="{i18n:Translate Save}">
-                </Button>
+                <StackLayout
+                    Orientation="Horizontal">
+                    <Button
+                        BorderRadius="23"
+                        Command="{Binding SaveCommand}"
+                        HorizontalOptions="FillAndExpand"
+                        HeightRequest="46"
+                        BackgroundColor="Navy"
+                        TextColor="White"
+                        IsEnabled="{Binding IsEnabled}"
+                        Text="{i18n:Translate Save}">
+                    </Button>
+                    <Button
+                        BorderRadius="23"
+                        Command="{Binding DeleteCommand}"
+                        HorizontalOptions="FillAndExpand"
+                        HeightRequest="46"
+                        BackgroundColor="Red"
+                        TextColor="White"
+                        IsEnabled="{Binding IsEnabled}"
+                        Text="{i18n:Translate Delete}">
+                    </Button>
+                </StackLayout>
             </StackLayout>
         </ScrollView>
     </ContentPage.Content>

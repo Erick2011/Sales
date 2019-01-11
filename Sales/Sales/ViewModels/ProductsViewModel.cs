@@ -8,13 +8,18 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Linq;
+    using System.Threading.Tasks;
     using System.Windows.Input;
     using Xamarin.Forms;
 
     public class ProductsViewModel : BaseViewModel
     {
         #region Attributes
+        private string filter;
+
         private ApiService apiService;
+
+        private DataService dataService;
 
         private bool isRefreshing;
 
@@ -23,6 +28,17 @@
 
         #region Properties
         public List<Product> MyProducts { get; set; }
+
+        public string Filter
+        {
+            get { return this.filter; }
+            set
+            {
+                this.filter = value;
+                this.RefreshList();
+
+            }
+        }
 
         public ObservableCollection<ProductItemViewModel> Products
         {
@@ -42,6 +58,7 @@
         {
             instance = this;
             this.apiService = new ApiService();
+            this.dataService = new DataService();
             this.LoadProducts();
         }
         #endregion
@@ -67,50 +84,106 @@
 
             var connection = await this.apiService.CheckConnection();
 
-            if (!connection.IsSuccess)
+            if (connection.IsSuccess)
             {
-                this.IsRefreshing = false;
-                await Application.Current.MainPage.DisplayAlert(Languages.Error, connection.Message, Languages.Accept);
-                return;
-            }
-            var url = Application.Current.Resources["UrlAPI"].ToString();
-            var prefix = Application.Current.Resources["UrlPrefix"].ToString();
-            var controller = Application.Current.Resources["UrlProductsController"].ToString();
-
-            var response = await apiService.GetList<Product>(url, prefix, controller);
-            if (!response.IsSuccess)
-            {
-                this.IsRefreshing = false;
-                await Application.Current.MainPage.DisplayAlert(Languages.Error, response.Message, Languages.Accept);
-                return;
+                var answer = await this.LoadProductsFromAPI();
+                if (answer)
+                {
+                    this.SaveProductsToDB();
+                }
+                else
+                {
+                    await this.LoadProductsFromDB();
+                }               
             }
 
-            this.MyProducts = (List<Product>)response.Result;
+            if(this.MyProducts == null || this.MyProducts.Count == 0)
+            {
+                this.IsRefreshing = false;
+                await Application.Current.MainPage.DisplayAlert(Languages.Error, Languages.NoProductsMessage, Languages.Accept);
+                return;
+            }
+
             this.RefreshList();
             this.IsRefreshing = false;
         }
 
+        private async Task LoadProductsFromDB()
+        {
+            this.MyProducts = await this.dataService.GetAllProducts();
+        }
+
+        private async void SaveProductsToDB()
+        {
+            await this.dataService.DeleteAllProducts();
+            dataService.Insert(this.MyProducts);
+        }
+
+        private async Task<bool> LoadProductsFromAPI()
+        {
+            var url = Application.Current.Resources["UrlAPI"].ToString();
+            var prefix = Application.Current.Resources["UrlPrefix"].ToString();
+            var controller = Application.Current.Resources["UrlProductsController"].ToString();
+
+            var response = await apiService.GetList<Product>(url, prefix, controller, Settings.TokenType, Settings.AccessToken);
+            if (!response.IsSuccess)
+            {
+                return false;
+            }
+
+            this.MyProducts = (List<Product>)response.Result;
+            return true;
+        }
+
         public void RefreshList()
         {
-            var myListProductItemViewModel = MyProducts.Select(p => new ProductItemViewModel
+            if (string.IsNullOrEmpty(this.Filter))
             {
-                Description = p.Description,
-                ImageArray = p.ImageArray,
-                ImagePath = p.ImagePath,
-                IsAvailable = p.IsAvailable,
-                Price = p.Price,
-                ProductId = p.ProductId,
-                PublishOn = p.PublishOn,
-                Remarks = p.Remarks,
-            });
+                var myListProductItemViewModel = MyProducts.Select(p => new ProductItemViewModel
+                {
+                    Description = p.Description,
+                    ImageArray = p.ImageArray,
+                    ImagePath = p.ImagePath,
+                    IsAvailable = p.IsAvailable,
+                    Price = p.Price,
+                    ProductId = p.ProductId,
+                    PublishOn = p.PublishOn,
+                    Remarks = p.Remarks,
+                });
 
-            this.Products = new ObservableCollection<ProductItemViewModel>(
-                myListProductItemViewModel.OrderBy(p => p.Description));
-            
+                this.Products = new ObservableCollection<ProductItemViewModel>(
+                    myListProductItemViewModel.OrderBy(p => p.Description));
+            }
+            else
+            {
+                var myListProductItemViewModel = MyProducts.Select(p => new ProductItemViewModel
+                {
+                    Description = p.Description,
+                    ImageArray = p.ImageArray,
+                    ImagePath = p.ImagePath,
+                    IsAvailable = p.IsAvailable,
+                    Price = p.Price,
+                    ProductId = p.ProductId,
+                    PublishOn = p.PublishOn,
+                    Remarks = p.Remarks,
+                }).Where(p=> p.Description.ToLower().Contains(this.Filter.ToLower())).ToList();
+
+                this.Products = new ObservableCollection<ProductItemViewModel>(
+                    myListProductItemViewModel.OrderBy(p => p.Description));
+            }        
         }
+
         #endregion
 
         #region Commands
+        public ICommand SearchCommand
+        {
+            get
+            {
+                return new RelayCommand(RefreshList);
+            }
+        }
+
         public ICommand RefreshCommand
         {
             get

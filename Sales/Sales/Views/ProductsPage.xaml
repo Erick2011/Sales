@@ -12,6 +12,12 @@
         <StackLayout
             BindingContext="{Binding Products}"
             Padding="5">
+            <SearchBar
+                HeightRequest="30"
+                Placeholder="{i18n:Translate Search}"
+                SearchCommand="{Binding SearchCommand}"
+                Text="{Binding Filter}">
+            </SearchBar>
             <ListView
                 HasUnevenRows="True"
                 IsRefreshing="{Binding IsRefreshing}"
@@ -26,10 +32,14 @@
                                 <MenuItem Text="{i18n:Translate Delete}" Command="{Binding DeleteProductCommand}" IsDestructive="True"/>
                             </ViewCell.ContextActions>
                             <Grid>
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding EditProductCommand}"/>
+                                </Grid.GestureRecognizers>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="2*"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Image
                                     Grid.Column="0"
@@ -52,6 +62,11 @@
                                        Text="{Binding Price, StringFormat='{0:C2}'}"
                                        VerticalOptions="Center">
                                 </Label>
+                                <Image
+                                    Grid.Column="3"
+                                    Source="ic_chevron_right.png"
+                                    VerticalOptions="Center">
+                                </Image>
                             </Grid>
                         </ViewCell>
                     </DataTemplate>
