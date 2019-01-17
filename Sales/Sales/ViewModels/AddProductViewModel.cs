@@ -123,6 +123,15 @@
                 return;
             }
 
+            if (this.Category == null)
+            {
+                await Application.Current.MainPage.DisplayAlert(
+                    Languages.Error,
+                    Languages.CategoryError,
+                    Languages.Accept);
+                return;
+            }
+
             this.IsRunning = true;
             this.IsEnabled = false;
 
@@ -150,7 +159,10 @@
                 Price = price,
                 Remarks = this.Remarks,
                 ImageArray = imageArray,
+                CategoryId = this.Category.CategoryId,
+                UserId = MainViewModel.GetInstance().UserASP.Id,
             };
+
 
 
             var url = Application.Current.Resources["UrlAPI"].ToString();

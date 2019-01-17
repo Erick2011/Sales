@@ -134,7 +134,7 @@
         {
             if (string.IsNullOrEmpty(this.Filter))
             {
-                var myListProductItemViewModel = MyProducts.Select(p => new ProductItemViewModel
+                var myListProductItemViewModel = this.MyProducts.Select(p => new ProductItemViewModel
                 {
                     Description = p.Description,
                     ImageArray = p.ImageArray,
@@ -144,6 +144,8 @@
                     ProductId = p.ProductId,
                     PublishOn = p.PublishOn,
                     Remarks = p.Remarks,
+                    CategoryId = p.CategoryId,
+                    UserId = p.UserId,
                 });
 
                 this.Products = new ObservableCollection<ProductItemViewModel>(
@@ -151,7 +153,7 @@
             }
             else
             {
-                var myListProductItemViewModel = MyProducts.Select(p => new ProductItemViewModel
+                var myListProductItemViewModel = this.MyProducts.Select(p => new ProductItemViewModel
                 {
                     Description = p.Description,
                     ImageArray = p.ImageArray,
@@ -161,12 +163,15 @@
                     ProductId = p.ProductId,
                     PublishOn = p.PublishOn,
                     Remarks = p.Remarks,
-                }).Where(p=> p.Description.ToLower().Contains(this.Filter.ToLower())).ToList();
+                    CategoryId = p.CategoryId,
+                    UserId = p.UserId,
+                }).Where(p => p.Description.ToLower().Contains(this.Filter.ToLower())).ToList();
 
                 this.Products = new ObservableCollection<ProductItemViewModel>(
                     myListProductItemViewModel.OrderBy(p => p.Description));
-            }        
+            }
         }
+
 
         #endregion
 
