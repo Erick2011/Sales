@@ -26,16 +26,26 @@ namespace Sales.ViewModels
             }
         }
 
-        private void Goto()
+        private async void Goto()
         {
             Settings.AccessToken = string.Empty;
             Settings.TokenType = string.Empty;
             Settings.IsRemembered = false;
 
-            if (this.PageName.Contains("LoginPage")){
+            if (this.PageName == "LoginPage")
+            {
+                Settings.AccessToken = string.Empty;
+                Settings.TokenType = string.Empty;
+                Settings.IsRemembered = false;
                 MainViewModel.GetInstance().Login = new LoginViewModel();
                 Application.Current.MainPage = new NavigationPage(new LoginPage());
             }
+            else if (this.PageName == "AboutPage")
+            {
+                App.Master.IsPresented = false;
+                await App.Navigator.PushAsync(new MapPage());
+            }
+
         }
         #endregion
     }

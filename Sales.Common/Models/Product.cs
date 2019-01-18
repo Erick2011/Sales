@@ -39,6 +39,10 @@
         [DataType(DataType.Date)]
         public DateTime PublishOn { get; set; }
 
+        public double Latitude { get; set; }
+
+        public double Longitude { get; set; }
+
         [NotMapped]
         public byte[] ImageArray { get; set; }
 
