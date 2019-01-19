@@ -17,8 +17,24 @@ namespace Sales.Droid
 
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
+        #region Singleton
+        private static MainActivity instance;
+
+        public static MainActivity GetInstance()
+        {
+            if (instance == null)
+            {
+                instance = new MainActivity();
+            }
+
+            return instance;
+        }
+        #endregion
+
+        #region Methods
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            instance = this;
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
@@ -26,8 +42,10 @@ namespace Sales.Droid
             CrossCurrentActivity.Current.Init(this, savedInstanceState);
             ImageCircleRenderer.Init();
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            global::Xamarin.FormsMaps.Init(this, savedInstanceState);
             LoadApplication(new App());
         }
+
 
         public override void OnRequestPermissionsResult(
             int requestCode,
@@ -39,6 +57,6 @@ namespace Sales.Droid
                 permissions,
                 grantResults);
         }
-
+        #endregion
     }
 }

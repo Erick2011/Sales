@@ -3,6 +3,7 @@
     using GalaSoft.MvvmLight.Command;
     using Sales.Common.Models;
     using Sales.Helpers;
+    using Sales.Interfaces;
     using Sales.Views;
     using System;
     using System.Collections.ObjectModel;
@@ -99,6 +100,13 @@
                 Title = Languages.Exit,
             });
         }
+
+        public void RegisterDevice()
+        {
+            var register = DependencyService.Get<IRegisterDevice>();
+            register.RegisterDevice();
+        }
+
         #endregion
 
         #region Singleton

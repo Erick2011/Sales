@@ -129,7 +129,6 @@
             return true;
         }
 
-
         public void RefreshList()
         {
             if (string.IsNullOrEmpty(this.Filter))
